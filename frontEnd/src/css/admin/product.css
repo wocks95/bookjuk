@@ -1,0 +1,11 @@
+.product-table {
+  table-layout: fixed;  
+ 
+}
+.product-table td,
+.product-table th {
+  white-space: nowrap;    /* 강제 한 줄 처리 */
+  overflow: hidden;       /* 넘치는 내용 숨김 */
+  text-overflow: ellipsis; /* 말줄임표(...) 표시 */
+  font-size: 12px;
+}

@@ -1,0 +1,51 @@
+volumes: # 볼륨 정의
+  mysql_vol: # MySQL 데이터베이스 볼륨
+services: # 컨테이너 서비스
+  db: # 데이터베이스 서비스의 이름
+    container_name: mysql-container # 컨테이너 이름
+    image: mysql:8.0 # MySQL 8.0 이미지 사용
+    environment: # 환경 변수 설정
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD={MYSQL_PASSWORD}
+      - TZ={TZ}
+    volumes: # 볼륨 연결
+      - mysql_vol:/var/lib/mysql
+    ports: # 포트 연결
+      - 3306:3306
+  backend: # 백엔드 서비스의 이름
+    container_name: backend-container # 컨테이너 이름
+    build: ./bookjuk_backend # Dockerfile이 있는 디렉터리
+    environment: # 환경 변수 설정
+      - WAIT_HOSTS=db:3306 # db 컨테이너가 준비될 때까지 대기
+      - SPRING_DATABASE_URL=jdbc:mysql://db:3306/${MYSQL_DATABASE}
+      - SPRING_DATABASE_USERNAME=${MYSQL_USER}
+      - SPRING_DATABASE_PASSWORD=${MYSQL_PASSWORD}
+      - IMGBB_APP_KEY={IMGBB_APP_KEY}
+      - KAKAO_CLIENT_ID={KAKAO_CLIENT_ID}
+      - KAKAO_CLIENT_SECRET={KAKAO_CLIENT_SECRET}
+      - NAVER_CLIENT_ID={NAVER_CLIENT_ID}
+      - NAVER_CLIENT_SECRET={NAVER_CLIENT_SECRET}
+      - PORTONE_SECRET_API={PORTONE_SECRET_API}
+      - PORTONE_SECRET_WEBHOOK={PORTONE_SECRET_WEBHOOK}
+    depends_on: # 의존성 설정, WAIT_HOSTS=db:3306와 함께 사용
+      - db # db 컨테이너가 먼저 실행되어야 함
+    ports: # 포트 연결
+      - 8080:8080
+  frontend: # 프론트엔드 서비스의 이름
+    container_name: frontend-container # 컨테이너 이름
+    build: ./bookjuk_frontend # Dockerfile이 있는 디렉터리
+    environment: # 환경 변수 설정
+      - WAIT_HOSTS=backend:8080 # backend 컨테이너가 준비될 때까지 대기
+      - REACT_APP_PORT_ONE_STOREID={REACT_APP_PORT_ONE_STOREID}
+      - REACT_APP_PORT_ONE_KACAO_CHANNELKEY={REACT_APP_PORT_ONE_KACAO_CHANNELKEY}
+      - REACT_APP_PORT_ONE_KG_CHANNELKEY={REACT_APP_PORT_ONE_KG_CHANNELKEY}
+      - REACT_APP_KAKAO_CLIENT_ID={REACT_APP_KAKAO_CLIENT_ID}
+      - REACT_APP_KAKAO_REDIRECT_URI={REACT_APP_KAKAO_REDIRECT_URI}
+      - REACT_APP_NAVER_CLIENT_ID={REACT_APP_NAVER_CLIENT_ID}
+      - REACT_APP_NAVER_CALLBACK_URI={REACT_APP_NAVER_CALLBACK_URI}
+    depends_on: # 의존성 설정, WAIT_HOSTS=backend:8080와 함께 사용
+      - backend # backend 컨테이너가 먼저 실행되어야 함
+    ports: # 포트 연결
+      - 80:80
